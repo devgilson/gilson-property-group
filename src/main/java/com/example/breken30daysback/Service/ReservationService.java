@@ -8,11 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
     @Service
@@ -71,6 +74,13 @@ import java.util.*;
             HEADERS.setContentType(MediaType.APPLICATION_JSON);
         }
 
+        // ✅ Scheduled job to run at 3:00 AM every day
+        @Scheduled(cron = "0 0 3 * * ?")
+        public void scheduleReservationSync() {
+            System.out.println("🔄 Running scheduled reservation sync at 3:00 AM...");
+            fetchAndSaveReservations();
+        }
+
         public ReservationService(RestTemplate restTemplate, ObjectMapper objectMapper,
                                   ReservationRepository reservationRepository,
                                   GuestFinancialsService guestFinancialsService,
@@ -104,7 +114,8 @@ import java.util.*;
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("properties", PROPERTY_IDS);
                     requestBody.put("start_date", "2024-01-01");
-                    requestBody.put("end_date", "2025-02-18");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    requestBody.put("end_date", LocalDateTime.now().format(formatter));
 
                     HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, HEADERS);
 

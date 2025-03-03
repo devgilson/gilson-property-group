@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +31,12 @@ public class PropertyService {
 
     @Autowired
     private AmenitiesRepository amenitiesRepository;
+
+    @Scheduled(cron = "0 0 1 * * ?")  // Runs every day at 1 AM
+    public void schedulePropertySync() {
+        System.out.println("Scheduled Property Sync started at 1 AM...");
+        syncProperties();
+    }
 
     public void syncProperties() {
         try {
