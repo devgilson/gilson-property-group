@@ -27,10 +27,13 @@ public class GuestFinancials {
     private double guestServiceFee;
 
     // Taxes
-    private double accommodationsTax;
-    private double localSalesTax;
-    private double generalSalesTax;
-    private double summitSalesTax;
+    private double generalSalesTaxBreckenridge;
+    private double generalSalesTaxColorado;
+    private double generalSalesTaxSummit;
+    private double localSalesTaxSummitCountyHousingAuthority;
+    private double accommodationsTaxBreckenridge;
+
+    private double totalTax;
 
     public Long getId() {
         return id;
@@ -112,53 +115,75 @@ public class GuestFinancials {
         this.guestServiceFee = guestServiceFee;
     }
 
-    public double getAccommodationsTax() {
-        return accommodationsTax;
+    public double getGeneralSalesTaxBreckenridge() {
+        return generalSalesTaxBreckenridge;
     }
 
-    public void setAccommodationsTax(double accommodationsTax) {
-        this.accommodationsTax = accommodationsTax;
+    public void setGeneralSalesTaxBreckenridge(double generalSalesTaxBreckenridge) {
+        this.generalSalesTaxBreckenridge = generalSalesTaxBreckenridge;
     }
 
-    public double getLocalSalesTax() {
-        return localSalesTax;
+    public double getGeneralSalesTaxColorado() {
+        return generalSalesTaxColorado;
     }
 
-    public void setLocalSalesTax(double localSalesTax) {
-        this.localSalesTax = localSalesTax;
+    public void setGeneralSalesTaxColorado(double generalSalesTaxColorado) {
+        this.generalSalesTaxColorado = generalSalesTaxColorado;
     }
 
-    public double getGeneralSalesTax() {
-        return generalSalesTax;
+    public double getGeneralSalesTaxSummit() {
+        return generalSalesTaxSummit;
     }
 
-    public void setGeneralSalesTax(double generalSalesTax) {
-        this.generalSalesTax = generalSalesTax;
+    public void setGeneralSalesTaxSummit(double generalSalesTaxSummit) {
+        this.generalSalesTaxSummit = generalSalesTaxSummit;
     }
 
-    public double getSummitSalesTax() {
-        return summitSalesTax;
+    public double getLocalSalesTaxSummitCountyHousingAuthority() {
+        return localSalesTaxSummitCountyHousingAuthority;
     }
 
-    public void setSummitSalesTax(double summitSalesTax) {
-        this.summitSalesTax = summitSalesTax;
+    public void setLocalSalesTaxSummitCountyHousingAuthority(double localSalesTaxSummitCountyHousingAuthority) {
+        this.localSalesTaxSummitCountyHousingAuthority = localSalesTaxSummitCountyHousingAuthority;
     }
 
-    public void setTaxAmount(String taxLabel, double amount) {
-        switch (taxLabel) {
-            case "Accommodations Tax (Summit)":
-                this.accommodationsTax = amount;
-                break;
-            case "Local Sales and Use Tax (Summit County Housing Authority)":
-                this.localSalesTax = amount;
+    public double getAccommodationsTaxBreckenridge() {
+        return accommodationsTaxBreckenridge;
+    }
+
+    public void setAccommodationsTaxBreckenridge(double accommodationsTaxBreckenridge) {
+        this.accommodationsTaxBreckenridge = accommodationsTaxBreckenridge;
+    }
+
+    public double getTotalTax() {
+        return totalTax;
+    }
+
+    public void setTotalTax(double totalTax) {
+        this.totalTax = totalTax;
+    }
+
+    public void setTaxAmount(String label, double amount) {
+        switch (label) {
+            case "General Sales and Use Tax (Breckenridge)":
+                this.generalSalesTaxBreckenridge = amount;
                 break;
             case "General Sales and Use Tax (Colorado)":
-                this.generalSalesTax = amount;
+                this.generalSalesTaxColorado = amount;
                 break;
             case "General Sales and Use Tax (Summit)":
-                this.summitSalesTax = amount;
+                this.generalSalesTaxSummit = amount;
+                break;
+            case "Local Sales and Use Tax (Summit County Housing Authority)":
+                this.localSalesTaxSummitCountyHousingAuthority = amount;
+                break;
+            case "Accommodations Tax (Breckenridge)":
+                this.accommodationsTaxBreckenridge = amount;
+                break;
+            default:
                 break;
         }
+        this.totalTax += amount; // Add to total tax sum
     }
 
     public void setFeeAmount(String feeLabel, double amount) {
