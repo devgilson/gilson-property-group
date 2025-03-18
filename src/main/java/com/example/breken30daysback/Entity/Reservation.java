@@ -18,6 +18,11 @@ public class Reservation {
     private String checkIn;
     private String checkOut;
     private int nights;
+    private int adultCount;
+    private int childCount;
+    private int infantCount;
+    private int petCount;
+
 
     @Column(columnDefinition = "TEXT")
     private String guests;
@@ -132,5 +137,37 @@ public class Reservation {
 
     public void setFinancials(Financials financials) {
         this.financials = financials;
+    }
+
+    public int getAdultCount() {
+        return adultCount;
+    }
+
+    public void setAdultCount(int adultCount) {
+        this.adultCount = adultCount;
+    }
+
+    public int getChildCount() {
+        return childCount;
+    }
+
+    public void setChildCount(int childCount) {
+        this.childCount = childCount;
+    }
+
+    public int getInfantCount() {
+        return infantCount;
+    }
+
+    public void setInfantCount(int infantCount) {
+        this.infantCount = infantCount;
+    }
+
+    public int getPetCount() {
+        return petCount;
+    }
+
+    public void setPetCount(int petCount) {
+        this.petCount = petCount;
     }
 }

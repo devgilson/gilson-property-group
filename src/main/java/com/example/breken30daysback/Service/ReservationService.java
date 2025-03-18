@@ -1,6 +1,7 @@
 package com.example.breken30daysback.Service;
 
 import com.example.breken30daysback.Entity.Reservation;
+import com.example.breken30daysback.Models.GuestDetailsDTO;
 import com.example.breken30daysback.Models.Property;
 import com.example.breken30daysback.Models.ReservationDTO;
 import com.example.breken30daysback.Repository.*;
@@ -113,8 +114,8 @@ import java.util.*;
                     // ✅ **Create request body**
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("properties", PROPERTY_IDS);
-                    requestBody.put("start_date", "2024-01-01");
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    requestBody.put("start_date", "2023-01-01");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                     requestBody.put("end_date", LocalDateTime.now().format(formatter));
 
                     HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, HEADERS);
@@ -161,6 +162,7 @@ import java.util.*;
             }
         }
 
+        @Transactional
         public void processReservation(ReservationDTO dto) {
             String reservationId = dto.getId();
 
@@ -197,6 +199,8 @@ import java.util.*;
                 return null; // Don't save if property doesn't exist
             }
 
+            ObjectMapper objectMapper = new ObjectMapper();
+
             // ✅ Create and Save Reservation
             Reservation reservation = new Reservation();
             reservation.setId(dto.getId());
@@ -209,7 +213,20 @@ import java.util.*;
             reservation.setCheckIn(dto.getCheckIn());
             reservation.setCheckOut(dto.getCheckOut());
             reservation.setNights(dto.getNights());
-            reservation.setGuests(dto.getGuests().toString());
+            GuestDetailsDTO guestDetails = dto.getGuests();
+            if (guestDetails != null) {  // ✅ Prevent NullPointerException
+                reservation.setAdultCount(guestDetails.getAdultCount());
+                reservation.setChildCount(guestDetails.getChildCount());
+                reservation.setInfantCount(guestDetails.getInfantCount());
+                reservation.setPetCount(guestDetails.getPetCount());
+            } else {
+                reservation.setAdultCount(0);
+                reservation.setChildCount(0);
+                reservation.setInfantCount(0);
+                reservation.setPetCount(0);
+            }
+
+            //reservation.setGuests(dto.getGuests().toString());
             reservation.setProperty(optionalProperty.get()); // ✅ Set the property
 
             return reservationRepository.save(reservation);

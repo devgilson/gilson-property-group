@@ -37,7 +37,13 @@ public class ReservationDTO {
     private Map<String, Object> reservationStatus;
 
     @JsonProperty("guests")
-    private Map<String, Object> guests;
+    private GuestDetailsDTO guests;
+
+    private int adultCount;
+    private int childCount;
+    private int infantCount;
+    private int petCount;
+
 
     @JsonProperty("financials")
     private Map<String, Object> financials;
@@ -134,12 +140,45 @@ public class ReservationDTO {
         this.reservationStatus = reservationStatus;
     }
 
-    public Map<String, Object> getGuests() {
+    public GuestDetailsDTO getGuests() {
         return guests;
     }
 
-    public void setGuests(Map<String, Object> guests) {
+
+    public void setGuests(GuestDetailsDTO guests) {
         this.guests = guests;
+    }
+
+    public int getAdultCount() {
+        return adultCount;
+    }
+
+    public void setAdultCount(int adultCount) {
+        this.adultCount = adultCount;
+    }
+
+    public int getChildCount() {
+        return childCount;
+    }
+
+    public void setChildCount(int childCount) {
+        this.childCount = childCount;
+    }
+
+    public int getInfantCount() {
+        return infantCount;
+    }
+
+    public void setInfantCount(int infantCount) {
+        this.infantCount = infantCount;
+    }
+
+    public int getPetCount() {
+        return petCount;
+    }
+
+    public void setPetCount(int petCount) {
+        this.petCount = petCount;
     }
 
     public Map<String, Object> getFinancials() {
@@ -157,4 +196,7 @@ public class ReservationDTO {
     public void setProperties(List<Map<String, Object>> properties) {
         this.properties = properties;
     }
+
+
+
 }

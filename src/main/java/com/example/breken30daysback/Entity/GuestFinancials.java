@@ -25,6 +25,7 @@ public class GuestFinancials {
     private double managementFee;
     private double communityFee;
     private double guestServiceFee;
+    private double petFee;
 
     // Taxes
     private double generalSalesTaxBreckenridge;
@@ -32,6 +33,46 @@ public class GuestFinancials {
     private double generalSalesTaxSummit;
     private double localSalesTaxSummitCountyHousingAuthority;
     private double accommodationsTaxBreckenridge;
+    private double resolutionPayout;
+    private double extraGuestFee;
+    private double propertyDamageProtection;
+    private double petDamages;
+    private double damageProtection;
+    private double resortFee;
+
+    // Payment 1
+    private Double payment1Amount;
+    private String payment1Formatted;
+    private String payment1Label;
+
+    // Payment 2
+    private Double payment2Amount;
+    private String payment2Formatted;
+    private String payment2Label;
+
+    public double getPetFee() {
+        return petFee;
+    }
+
+    public void setPetFee(double petFee) {
+        this.petFee = petFee;
+    }
+
+    public double getResolutionPayout() {
+        return resolutionPayout;
+    }
+
+    public void setResolutionPayout(double resolutionPayout) {
+        this.resolutionPayout = resolutionPayout;
+    }
+
+    public double getExtraGuestFee() {
+        return extraGuestFee;
+    }
+
+    public void setExtraGuestFee(double extraGuestFee) {
+        this.extraGuestFee = extraGuestFee;
+    }
 
     private double totalTax;
 
@@ -99,6 +140,14 @@ public class GuestFinancials {
         this.managementFee = managementFee;
     }
 
+    public double getResortFee() {
+        return resortFee;
+    }
+
+    public void setResortFee(double resortFee) {
+        this.resortFee = resortFee;
+    }
+
     public double getCommunityFee() {
         return communityFee;
     }
@@ -155,12 +204,84 @@ public class GuestFinancials {
         this.accommodationsTaxBreckenridge = accommodationsTaxBreckenridge;
     }
 
+    public double getPropertyDamageProtection() {
+        return propertyDamageProtection;
+    }
+
+    public void setPropertyDamageProtection(double propertyDamageProtection) {
+        this.propertyDamageProtection = propertyDamageProtection;
+    }
+
+    public double getPetDamages() {
+        return petDamages;
+    }
+
+    public void setPetDamages(double petDamages) {
+        this.petDamages = petDamages;
+    }
+
+    public double getDamageProtection() {
+        return damageProtection;
+    }
+
+    public void setDamageProtection(double damageProtection) {
+        this.damageProtection = damageProtection;
+    }
+
     public double getTotalTax() {
         return totalTax;
     }
 
     public void setTotalTax(double totalTax) {
         this.totalTax = totalTax;
+    }
+
+    public Double getPayment1Amount() {
+        return payment1Amount;
+    }
+
+    public void setPayment1Amount(Double payment1Amount) {
+        this.payment1Amount = payment1Amount;
+    }
+
+    public String getPayment1Formatted() {
+        return payment1Formatted;
+    }
+
+    public void setPayment1Formatted(String payment1Formatted) {
+        this.payment1Formatted = payment1Formatted;
+    }
+
+    public String getPayment1Label() {
+        return payment1Label;
+    }
+
+    public void setPayment1Label(String payment1Label) {
+        this.payment1Label = payment1Label;
+    }
+
+    public Double getPayment2Amount() {
+        return payment2Amount;
+    }
+
+    public void setPayment2Amount(Double payment2Amount) {
+        this.payment2Amount = payment2Amount;
+    }
+
+    public String getPayment2Formatted() {
+        return payment2Formatted;
+    }
+
+    public void setPayment2Formatted(String payment2Formatted) {
+        this.payment2Formatted = payment2Formatted;
+    }
+
+    public String getPayment2Label() {
+        return payment2Label;
+    }
+
+    public void setPayment2Label(String payment2Label) {
+        this.payment2Label = payment2Label;
     }
 
     public void setTaxAmount(String label, double amount) {

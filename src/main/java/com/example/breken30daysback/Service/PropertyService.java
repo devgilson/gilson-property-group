@@ -9,11 +9,13 @@ import com.example.breken30daysback.Repository.AmenitiesRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.Optional;
 
 @Service
@@ -31,6 +33,13 @@ public class PropertyService {
 
     @Autowired
     private AmenitiesRepository amenitiesRepository;
+
+    @Autowired
+    private ZohoAuthService zohoAuthService;
+
+    @Value("${zoho.crm.api.url.properties}")
+    private String crmApiUrl;
+
 
     @Scheduled(cron = "0 0 1 * * ?")  // Runs every day at 1 AM
     public void schedulePropertySync() {
@@ -97,6 +106,8 @@ public class PropertyService {
                         ListingDetails listingDetails = extractListingDetails(propertyNode, property);
                         listingDetailsRepository.save(listingDetails);
 
+                        syncPropertyToCRM(property, listingDetails);
+
                     } catch (Exception ex) {
                         System.err.println("Failed to process property: " + propertyNode.toString());
                         ex.printStackTrace();
@@ -113,6 +124,31 @@ public class PropertyService {
             } else {
                 throw new Exception("Failed to fetch properties: HTTP " + response.getStatusCode());
             }
+        }
+    }
+
+    private void syncPropertyToCRM(Property property, ListingDetails listingDetails) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization",  zohoAuthService.getAccessToken());
+        headers.set("Content-Type", "application/json");
+
+        String requestBody = "{\"data\":[{"
+                + "\"PropertyID\": \"" + property.getPropertyId() + "\", "
+                + "\"Name\": \"" + property.getName() + "\", "
+                + "\"City\": \"" + property.getCity() + "\", "
+                + "\"State\": \"" + property.getState() + "\", "
+                + "\"Country\": \"" + property.getCountry() + "\", "
+                + "\"Latitude\": " + property.getLatitude() + ", "
+                + "\"Longitude\": " + property.getLongitude() + "}]}";
+
+        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<String> response = restTemplate.exchange(crmApiUrl, HttpMethod.POST, entity, String.class);
+
+        if (response.getStatusCode() == HttpStatus.CREATED || response.getStatusCode() == HttpStatus.OK) {
+            System.out.println("Successfully synced property to CRM: " + property.getPropertyId());
+        } else {
+            System.err.println("Failed to sync property to CRM: HTTP " + response.getStatusCode());
         }
     }
 
@@ -143,6 +179,11 @@ public class PropertyService {
             property.setEventsAllowed(houseRulesNode.has("events_allowed") ? houseRulesNode.get("events_allowed").asBoolean() : null);
             property.setPetsAllowed(houseRulesNode.has("pets_allowed") ? houseRulesNode.get("pets_allowed").asBoolean() : null);
             property.setSmokingAllowed(houseRulesNode.has("smoking_allowed") ? houseRulesNode.get("smoking_allowed").asBoolean() : null);
+        }
+
+        Optional<Property> existingProperty = propertyRepository.findByPropertyId(property.getPropertyId());
+        if (existingProperty.isPresent()) {
+            property.setCleaningExpenses(existingProperty.get().getCleaningExpenses());
         }
 
         return property;

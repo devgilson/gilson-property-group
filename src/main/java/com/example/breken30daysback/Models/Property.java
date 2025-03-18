@@ -26,6 +26,8 @@ public class Property {
     private Boolean petsAllowed;
     private Boolean smokingAllowed;
     private Boolean eventsAllowed;
+    @Column(name = "cleaning_expenses")
+    private Double cleaningExpenses;
 
     public Long getId() {
         return id;
@@ -139,7 +141,13 @@ public class Property {
         this.eventsAllowed = eventsAllowed;
     }
 
+    public Double getCleaningExpenses() {
+        return cleaningExpenses;
+    }
 
+    public void setCleaningExpenses(Double cleaningExpenses) {
+        this.cleaningExpenses = cleaningExpenses;
+    }
 }
 
 

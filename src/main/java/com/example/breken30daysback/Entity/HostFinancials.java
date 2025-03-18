@@ -25,6 +25,13 @@ public class HostFinancials {
     private double totalDiscounts;
     private double totalAdjustments;
     private double totalTaxes;
+    private double paidToVrbo;
+    private Double managementFee;
+    private Double cleaningFee;
+    private Double extraGuestFee;
+    private Double communityFee;
+    private Double resortFee;
+    private Double damageProtection;
 
     public Long getId() {
         return id;
@@ -120,5 +127,61 @@ public class HostFinancials {
 
     public void setTotalTaxes(double totalTaxes) {
         this.totalTaxes = totalTaxes;
+    }
+
+    public double getPaidToVrbo() {
+        return paidToVrbo;
+    }
+
+    public void setPaidToVrbo(double paidToVrbo) {
+        this.paidToVrbo = paidToVrbo;
+    }
+
+    public Double getManagementFee() {
+        return managementFee;
+    }
+
+    public void setManagementFee(Double managementFee) {
+        this.managementFee = managementFee;
+    }
+
+    public Double getCleaningFee() {
+        return cleaningFee;
+    }
+
+    public void setCleaningFee(Double cleaningFee) {
+        this.cleaningFee = cleaningFee;
+    }
+
+    public Double getExtraGuestFee() {
+        return extraGuestFee;
+    }
+
+    public void setExtraGuestFee(Double extraGuestFee) {
+        this.extraGuestFee = extraGuestFee;
+    }
+
+    public Double getCommunityFee() {
+        return communityFee;
+    }
+
+    public void setCommunityFee(Double communityFee) {
+        this.communityFee = communityFee;
+    }
+
+    public Double getResortFee() {
+        return resortFee;
+    }
+
+    public void setResortFee(Double resortFee) {
+        this.resortFee = resortFee;
+    }
+
+    public Double getDamageProtection() {
+        return damageProtection;
+    }
+
+    public void setDamageProtection(Double damageProtection) {
+        this.damageProtection = damageProtection;
     }
 }
