@@ -185,11 +185,76 @@ import java.util.*;
                 Reservation newReservation = saveReservation(dto);
                 if (newReservation == null) return;
 
+                // Save the initial status history
+                saveInitialReservationHistory(newReservation, dto);
+
                 guestFinancialsService.processGuestFinancials(dto, newReservation);
                 hostFinancialsService.processHostFinancials(dto, newReservation);
                 capacityDetailsService.processCapacityDetails(dto, newReservation);
                 System.out.println("✅ Created new reservation: " + reservationId);
             }
+        }
+
+        @Transactional
+        public Reservation saveReservation(ReservationDTO dto) {
+            String reservationId = dto.getId();
+
+            // ✅ Ensure at least one property exists
+            if (dto.getProperties() == null || dto.getProperties().isEmpty()) {
+                System.out.println("🚨 Reservation " + reservationId + " has no properties. Skipping...");
+                return null;
+            }
+
+            // ✅ Extract property ID from DTO
+            String propertyId = dto.getProperties().get(0).get("id").toString().replace("\"", "");
+
+            // ✅ Fetch property from DB
+            Optional<Property> optionalProperty = propertyRepository.findByPropertyId(propertyId);
+            if (optionalProperty.isEmpty()) {
+                System.out.println("🚨 Property " + propertyId + " not found for reservation " + reservationId);
+                return null; // Don't save if property doesn't exist
+            }
+
+            // ✅ Create and Save Reservation
+            Reservation reservation = new Reservation();
+            reservation.setId(dto.getId());
+            reservation.setCode(dto.getCode());
+            reservation.setPlatform(dto.getPlatform());
+            reservation.setPlatformId(dto.getPlatformId());
+            reservation.setBookingDate(dto.getBookingDate());
+            reservation.setArrivalDate(dto.getArrivalDate());
+            reservation.setDepartureDate(dto.getDepartureDate());
+            reservation.setCheckIn(dto.getCheckIn());
+            reservation.setCheckOut(dto.getCheckOut());
+            reservation.setNights(dto.getNights());
+
+            // Set status fields from DTO
+            Map<String, Object> reservationStatus = dto.getReservationStatus();
+            if (reservationStatus != null) {
+                Map<String, Object> currentStatus = (Map<String, Object>) reservationStatus.get("current");
+                if (currentStatus != null) {
+                    reservation.setStatus((String) currentStatus.get("category"));
+                    reservation.setStatusCategory((String) currentStatus.get("category"));
+                    reservation.setStatusSubCategory((String) currentStatus.get("sub_category"));
+                }
+            }
+
+            GuestDetailsDTO guestDetails = dto.getGuests();
+            if (guestDetails != null) {  // ✅ Prevent NullPointerException
+                reservation.setAdultCount(guestDetails.getAdultCount());
+                reservation.setChildCount(guestDetails.getChildCount());
+                reservation.setInfantCount(guestDetails.getInfantCount());
+                reservation.setPetCount(guestDetails.getPetCount());
+            } else {
+                reservation.setAdultCount(0);
+                reservation.setChildCount(0);
+                reservation.setInfantCount(0);
+                reservation.setPetCount(0);
+            }
+
+            reservation.setProperty(optionalProperty.get()); // ✅ Set the property
+
+            return reservationRepository.save(reservation);
         }
 
         @Transactional
@@ -219,14 +284,8 @@ import java.util.*;
             // Save the updated reservation
             reservationRepository.save(reservation);
 
-            // Add a new entry to the reservation history
-            ReservationHistory historyEntry = new ReservationHistory();
-            historyEntry.setReservationId(reservation.getId());
-            historyEntry.setStatus(reservation.getStatus());
-            historyEntry.setStatusCategory(reservation.getStatusCategory());
-            historyEntry.setStatusSubCategory(reservation.getStatusSubCategory());
-            historyEntry.setChangedAt(LocalDateTime.now());
-            reservationHistoryRepository.save(historyEntry);
+            // Save the status change history
+            saveReservationHistory(reservation, dto);
 
             // Update financials and capacity details
             guestFinancialsService.processGuestFinancials(dto, reservation);
@@ -234,59 +293,32 @@ import java.util.*;
             capacityDetailsService.processCapacityDetails(dto, reservation);
         }
 
-        @Transactional
-        public Reservation saveReservation(ReservationDTO dto) {
-            String reservationId = dto.getId();
-
-            // ✅ Ensure at least one property exists
-            if (dto.getProperties() == null || dto.getProperties().isEmpty()) {
-                //System.out.println("🚨 Reservation " + reservationId + " has no properties. Skipping...");
-                return null;
+        private void saveInitialReservationHistory(Reservation reservation, ReservationDTO dto) {
+            // Extract the initial status from the status_history array
+            List<Map<String, Object>> statusHistory = (List<Map<String, Object>>) dto.getReservationStatus().get("history");
+            if (statusHistory != null && !statusHistory.isEmpty()) {
+                Map<String, Object> initialStatus = statusHistory.get(0);
+                saveReservationHistoryEntry(reservation, initialStatus);
             }
-
-            // ✅ Extract property ID from DTO
-            String propertyId = dto.getProperties().get(0).get("id").toString().replace("\"", "");
-
-            // ✅ Fetch property from DB
-            Optional<Property> optionalProperty = propertyRepository.findByPropertyId(propertyId);
-            if (optionalProperty.isEmpty()) {
-               // System.out.println("🚨 Property " + propertyId + " not found for reservation " + reservationId);
-                return null; // Don't save if property doesn't exist
-            }
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            // ✅ Create and Save Reservation
-            Reservation reservation = new Reservation();
-            reservation.setId(dto.getId());
-            reservation.setCode(dto.getCode());
-            reservation.setPlatform(dto.getPlatform());
-            reservation.setPlatformId(dto.getPlatformId());
-            reservation.setBookingDate(dto.getBookingDate());
-            reservation.setArrivalDate(dto.getArrivalDate());
-            reservation.setDepartureDate(dto.getDepartureDate());
-            reservation.setCheckIn(dto.getCheckIn());
-            reservation.setCheckOut(dto.getCheckOut());
-            reservation.setNights(dto.getNights());
-            GuestDetailsDTO guestDetails = dto.getGuests();
-            if (guestDetails != null) {  // ✅ Prevent NullPointerException
-                reservation.setAdultCount(guestDetails.getAdultCount());
-                reservation.setChildCount(guestDetails.getChildCount());
-                reservation.setInfantCount(guestDetails.getInfantCount());
-                reservation.setPetCount(guestDetails.getPetCount());
-            } else {
-                reservation.setAdultCount(0);
-                reservation.setChildCount(0);
-                reservation.setInfantCount(0);
-                reservation.setPetCount(0);
-            }
-
-            //reservation.setGuests(dto.getGuests().toString());
-            reservation.setProperty(optionalProperty.get()); // ✅ Set the property
-
-            return reservationRepository.save(reservation);
         }
 
+        private void saveReservationHistory(Reservation reservation, ReservationDTO dto) {
+            // Extract the current status from the reservation_status object
+            Map<String, Object> currentStatus = (Map<String, Object>) dto.getReservationStatus().get("current");
+            if (currentStatus != null) {
+                saveReservationHistoryEntry(reservation, currentStatus);
+            }
+        }
+
+        private void saveReservationHistoryEntry(Reservation reservation, Map<String, Object> status) {
+            ReservationHistory historyEntry = new ReservationHistory();
+            historyEntry.setReservationId(reservation.getId());
+            historyEntry.setStatus((String) status.get("category"));
+            historyEntry.setStatusCategory((String) status.get("category"));
+            historyEntry.setStatusSubCategory((String) status.get("sub_category"));
+            historyEntry.setChangedAt(LocalDateTime.now());
+            reservationHistoryRepository.save(historyEntry);
+        }
 
         private void sleep(int millis) {
             try {
