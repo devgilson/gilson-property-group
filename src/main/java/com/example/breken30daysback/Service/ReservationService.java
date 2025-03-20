@@ -176,12 +176,12 @@ import java.util.*;
             Optional<Reservation> existingReservationOpt = reservationRepository.findById(reservationId);
 
             if (existingReservationOpt.isPresent()) {
-                // ✅ Reservation exists, update it
+                // Reservation exists, update it
                 Reservation existingReservation = existingReservationOpt.get();
                 updateReservation(existingReservation, dto);
                 System.out.println("🔄 Updated existing reservation: " + reservationId);
             } else {
-                // ✅ Reservation does not exist, create a new one
+                // Reservation does not exist, create a new one
                 Reservation newReservation = saveReservation(dto);
                 if (newReservation == null) return;
 
@@ -199,23 +199,23 @@ import java.util.*;
         public Reservation saveReservation(ReservationDTO dto) {
             String reservationId = dto.getId();
 
-            // ✅ Ensure at least one property exists
+            // Ensure at least one property exists
             if (dto.getProperties() == null || dto.getProperties().isEmpty()) {
                 System.out.println("🚨 Reservation " + reservationId + " has no properties. Skipping...");
                 return null;
             }
 
-            // ✅ Extract property ID from DTO
+            // Extract property ID from DTO
             String propertyId = dto.getProperties().get(0).get("id").toString().replace("\"", "");
 
-            // ✅ Fetch property from DB
+            // Fetch property from DB
             Optional<Property> optionalProperty = propertyRepository.findByPropertyId(propertyId);
             if (optionalProperty.isEmpty()) {
                 System.out.println("🚨 Property " + propertyId + " not found for reservation " + reservationId);
                 return null; // Don't save if property doesn't exist
             }
 
-            // ✅ Create and Save Reservation
+            // Create and Save Reservation
             Reservation reservation = new Reservation();
             reservation.setId(dto.getId());
             reservation.setCode(dto.getCode());
@@ -236,11 +236,21 @@ import java.util.*;
                     reservation.setStatus((String) currentStatus.get("category"));
                     reservation.setStatusCategory((String) currentStatus.get("category"));
                     reservation.setStatusSubCategory((String) currentStatus.get("sub_category"));
+                } else {
+                    // Fallback: Set default status if currentStatus is null
+                    reservation.setStatus("unknown");
+                    reservation.setStatusCategory("unknown");
+                    reservation.setStatusSubCategory(null);
                 }
+            } else {
+                // Fallback: Set default status if reservationStatus is null
+                reservation.setStatus("unknown");
+                reservation.setStatusCategory("unknown");
+                reservation.setStatusSubCategory(null);
             }
 
             GuestDetailsDTO guestDetails = dto.getGuests();
-            if (guestDetails != null) {  // ✅ Prevent NullPointerException
+            if (guestDetails != null) {  // Prevent NullPointerException
                 reservation.setAdultCount(guestDetails.getAdultCount());
                 reservation.setChildCount(guestDetails.getChildCount());
                 reservation.setInfantCount(guestDetails.getInfantCount());
@@ -252,7 +262,7 @@ import java.util.*;
                 reservation.setPetCount(0);
             }
 
-            reservation.setProperty(optionalProperty.get()); // ✅ Set the property
+            reservation.setProperty(optionalProperty.get()); // Set the property
 
             return reservationRepository.save(reservation);
         }
@@ -297,8 +307,9 @@ import java.util.*;
             // Extract the initial status from the status_history array
             List<Map<String, Object>> statusHistory = (List<Map<String, Object>>) dto.getReservationStatus().get("history");
             if (statusHistory != null && !statusHistory.isEmpty()) {
-                Map<String, Object> initialStatus = statusHistory.get(0);
-                saveReservationHistoryEntry(reservation, initialStatus);
+                for (Map<String, Object> status : statusHistory) {
+                    saveReservationHistoryEntry(reservation, status);
+                }
             }
         }
 
