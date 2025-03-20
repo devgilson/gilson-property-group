@@ -106,7 +106,7 @@ public class PropertyService {
                         ListingDetails listingDetails = extractListingDetails(propertyNode, property);
                         listingDetailsRepository.save(listingDetails);
 
-                        syncPropertyToCRM(property, listingDetails);
+                       // syncPropertyToCRM(property, listingDetails);
 
                     } catch (Exception ex) {
                         System.err.println("Failed to process property: " + propertyNode.toString());
