@@ -127,30 +127,32 @@ public class PropertyService {
         }
     }
 
-    private void syncPropertyToCRM(Property property, ListingDetails listingDetails) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization",  zohoAuthService.getAccessToken());
-        headers.set("Content-Type", "application/json");
+    //Rework on zoho crm commented for now to continue with Analytics
 
-        String requestBody = "{\"data\":[{"
-                + "\"PropertyID\": \"" + property.getPropertyId() + "\", "
-                + "\"Name\": \"" + property.getName() + "\", "
-                + "\"City\": \"" + property.getCity() + "\", "
-                + "\"State\": \"" + property.getState() + "\", "
-                + "\"Country\": \"" + property.getCountry() + "\", "
-                + "\"Latitude\": " + property.getLatitude() + ", "
-                + "\"Longitude\": " + property.getLongitude() + "}]}";
-
-        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
-        ResponseEntity<String> response = restTemplate.exchange(crmApiUrl, HttpMethod.POST, entity, String.class);
-
-        if (response.getStatusCode() == HttpStatus.CREATED || response.getStatusCode() == HttpStatus.OK) {
-            System.out.println("Successfully synced property to CRM: " + property.getPropertyId());
-        } else {
-            System.err.println("Failed to sync property to CRM: HTTP " + response.getStatusCode());
-        }
-    }
+//    private void syncPropertyToCRM(Property property, ListingDetails listingDetails) {
+//        RestTemplate restTemplate = new RestTemplate();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("Authorization",  zohoAuthService.getAccessToken());
+//        headers.set("Content-Type", "application/json");
+//
+//        String requestBody = "{\"data\":[{"
+//                + "\"PropertyID\": \"" + property.getPropertyId() + "\", "
+//                + "\"Name\": \"" + property.getName() + "\", "
+//                + "\"City\": \"" + property.getCity() + "\", "
+//                + "\"State\": \"" + property.getState() + "\", "
+//                + "\"Country\": \"" + property.getCountry() + "\", "
+//                + "\"Latitude\": " + property.getLatitude() + ", "
+//                + "\"Longitude\": " + property.getLongitude() + "}]}";
+//
+//        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+//        ResponseEntity<String> response = restTemplate.exchange(crmApiUrl, HttpMethod.POST, entity, String.class);
+//
+//        if (response.getStatusCode() == HttpStatus.CREATED || response.getStatusCode() == HttpStatus.OK) {
+//            System.out.println("Successfully synced property to CRM: " + property.getPropertyId());
+//        } else {
+//            System.err.println("Failed to sync property to CRM: HTTP " + response.getStatusCode());
+//        }
+//    }
 
     private Property extractProperty(JsonNode propertyNode) {
         Property property = new Property();
