@@ -166,14 +166,56 @@ import java.util.*;
         public void processReservation(ReservationDTO dto) {
             String reservationId = dto.getId();
 
-            if (reservationRepository.existsById(reservationId)) {
-                System.out.println("⚠️ Skipping already stored reservation: " + reservationId);
-                return;
+            // Check if the reservation already exists
+            Optional<Reservation> existingReservationOpt = reservationRepository.findById(reservationId);
+
+            if (existingReservationOpt.isPresent()) {
+                // ✅ Reservation exists, update it
+                Reservation existingReservation = existingReservationOpt.get();
+                updateReservation(existingReservation, dto);
+                //System.out.println("🔄 Updated existing reservation: " + reservationId);
+            } else {
+                // ✅ Reservation does not exist, create a new one
+                Reservation newReservation = saveReservation(dto);
+                if (newReservation == null) return;
+
+                guestFinancialsService.processGuestFinancials(dto, newReservation);
+                hostFinancialsService.processHostFinancials(dto, newReservation);
+                capacityDetailsService.processCapacityDetails(dto, newReservation);
+               // System.out.println("✅ Created new reservation: " + reservationId);
+            }
+        }
+
+        @Transactional
+        public void updateReservation(Reservation reservation, ReservationDTO dto) {
+            // Update reservation fields
+            reservation.setCode(dto.getCode());
+            reservation.setPlatform(dto.getPlatform());
+            reservation.setPlatformId(dto.getPlatformId());
+            reservation.setBookingDate(dto.getBookingDate());
+            reservation.setArrivalDate(dto.getArrivalDate());
+            reservation.setDepartureDate(dto.getDepartureDate());
+            reservation.setCheckIn(dto.getCheckIn());
+            reservation.setCheckOut(dto.getCheckOut());
+            reservation.setNights(dto.getNights());
+
+            GuestDetailsDTO guestDetails = dto.getGuests();
+            if (guestDetails != null) {
+                reservation.setAdultCount(guestDetails.getAdultCount());
+                reservation.setChildCount(guestDetails.getChildCount());
+                reservation.setInfantCount(guestDetails.getInfantCount());
+                reservation.setPetCount(guestDetails.getPetCount());
+            } else {
+                reservation.setAdultCount(0);
+                reservation.setChildCount(0);
+                reservation.setInfantCount(0);
+                reservation.setPetCount(0);
             }
 
-            Reservation reservation = saveReservation(dto);
-            if (reservation == null) return;
+            // Save the updated reservation
+            reservationRepository.save(reservation);
 
+            // Update financials and capacity details
             guestFinancialsService.processGuestFinancials(dto, reservation);
             hostFinancialsService.processHostFinancials(dto, reservation);
             capacityDetailsService.processCapacityDetails(dto, reservation);
@@ -185,7 +227,7 @@ import java.util.*;
 
             // ✅ Ensure at least one property exists
             if (dto.getProperties() == null || dto.getProperties().isEmpty()) {
-                System.out.println("🚨 Reservation " + reservationId + " has no properties. Skipping...");
+                //System.out.println("🚨 Reservation " + reservationId + " has no properties. Skipping...");
                 return null;
             }
 
@@ -195,7 +237,7 @@ import java.util.*;
             // ✅ Fetch property from DB
             Optional<Property> optionalProperty = propertyRepository.findByPropertyId(propertyId);
             if (optionalProperty.isEmpty()) {
-                System.out.println("🚨 Property " + propertyId + " not found for reservation " + reservationId);
+               // System.out.println("🚨 Property " + propertyId + " not found for reservation " + reservationId);
                 return null; // Don't save if property doesn't exist
             }
 
