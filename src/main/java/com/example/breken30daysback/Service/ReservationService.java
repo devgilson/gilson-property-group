@@ -1,6 +1,8 @@
 package com.example.breken30daysback.Service;
 
 import com.example.breken30daysback.Entity.Reservation;
+import com.example.breken30daysback.Entity.ReservationHistory;
+import com.example.breken30daysback.Repository.ReservationHistoryRepository;
 import com.example.breken30daysback.Models.GuestDetailsDTO;
 import com.example.breken30daysback.Models.Property;
 import com.example.breken30daysback.Models.ReservationDTO;
@@ -29,6 +31,8 @@ import java.util.*;
         private final CapacityDetailsService capacityDetailsService;
 
         private final PropertyRepository propertyRepository;
+
+        private final ReservationHistoryRepository reservationHistoryRepository;
 
         private static final String API_URL = "https://public.api.hospitable.com/v2/reservations?page=";
 
@@ -87,6 +91,7 @@ import java.util.*;
                                   GuestFinancialsService guestFinancialsService,
                                   HostFinancialsService hostFinancialsService,
                                   CapacityDetailsService capacityDetailsService,
+                                  ReservationHistoryRepository reservationHistoryRepository,
                                   PropertyRepository propertyRepository) {
             this.restTemplate = restTemplate;
             this.objectMapper = objectMapper;
@@ -94,6 +99,7 @@ import java.util.*;
             this.guestFinancialsService = guestFinancialsService;
             this.hostFinancialsService = hostFinancialsService;
             this.capacityDetailsService = capacityDetailsService;
+            this.reservationHistoryRepository = reservationHistoryRepository;
             this.propertyRepository = propertyRepository;
         }
 
@@ -173,7 +179,7 @@ import java.util.*;
                 // ✅ Reservation exists, update it
                 Reservation existingReservation = existingReservationOpt.get();
                 updateReservation(existingReservation, dto);
-                //System.out.println("🔄 Updated existing reservation: " + reservationId);
+                System.out.println("🔄 Updated existing reservation: " + reservationId);
             } else {
                 // ✅ Reservation does not exist, create a new one
                 Reservation newReservation = saveReservation(dto);
@@ -182,7 +188,7 @@ import java.util.*;
                 guestFinancialsService.processGuestFinancials(dto, newReservation);
                 hostFinancialsService.processHostFinancials(dto, newReservation);
                 capacityDetailsService.processCapacityDetails(dto, newReservation);
-               // System.out.println("✅ Created new reservation: " + reservationId);
+                System.out.println("✅ Created new reservation: " + reservationId);
             }
         }
 
@@ -199,21 +205,28 @@ import java.util.*;
             reservation.setCheckOut(dto.getCheckOut());
             reservation.setNights(dto.getNights());
 
-            GuestDetailsDTO guestDetails = dto.getGuests();
-            if (guestDetails != null) {
-                reservation.setAdultCount(guestDetails.getAdultCount());
-                reservation.setChildCount(guestDetails.getChildCount());
-                reservation.setInfantCount(guestDetails.getInfantCount());
-                reservation.setPetCount(guestDetails.getPetCount());
-            } else {
-                reservation.setAdultCount(0);
-                reservation.setChildCount(0);
-                reservation.setInfantCount(0);
-                reservation.setPetCount(0);
+            // Update status fields
+            Map<String, Object> reservationStatus = dto.getReservationStatus();
+            if (reservationStatus != null) {
+                Map<String, Object> currentStatus = (Map<String, Object>) reservationStatus.get("current");
+                if (currentStatus != null) {
+                    reservation.setStatus((String) currentStatus.get("category"));
+                    reservation.setStatusCategory((String) currentStatus.get("category"));
+                    reservation.setStatusSubCategory((String) currentStatus.get("sub_category"));
+                }
             }
 
             // Save the updated reservation
             reservationRepository.save(reservation);
+
+            // Add a new entry to the reservation history
+            ReservationHistory historyEntry = new ReservationHistory();
+            historyEntry.setReservationId(reservation.getId());
+            historyEntry.setStatus(reservation.getStatus());
+            historyEntry.setStatusCategory(reservation.getStatusCategory());
+            historyEntry.setStatusSubCategory(reservation.getStatusSubCategory());
+            historyEntry.setChangedAt(LocalDateTime.now());
+            reservationHistoryRepository.save(historyEntry);
 
             // Update financials and capacity details
             guestFinancialsService.processGuestFinancials(dto, reservation);

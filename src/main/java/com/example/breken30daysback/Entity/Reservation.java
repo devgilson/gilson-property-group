@@ -4,6 +4,8 @@ import com.example.breken30daysback.Models.Property;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 public class Reservation {
@@ -22,6 +24,9 @@ public class Reservation {
     private int childCount;
     private int infantCount;
     private int petCount;
+    private String status;
+    private String statusCategory;
+    private String statusSubCategory;
 
 
     @Column(columnDefinition = "TEXT")
@@ -34,6 +39,9 @@ public class Reservation {
 
     @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL)
     private Financials financials;
+
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ReservationHistory> history;
 
     public Property getProperty() {
         return property;
@@ -169,5 +177,37 @@ public class Reservation {
 
     public void setPetCount(int petCount) {
         this.petCount = petCount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getStatusCategory() {
+        return statusCategory;
+    }
+
+    public void setStatusCategory(String statusCategory) {
+        this.statusCategory = statusCategory;
+    }
+
+    public String getStatusSubCategory() {
+        return statusSubCategory;
+    }
+
+    public void setStatusSubCategory(String statusSubCategory) {
+        this.statusSubCategory = statusSubCategory;
+    }
+
+    public List<ReservationHistory> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<ReservationHistory> history) {
+        this.history = history;
     }
 }
